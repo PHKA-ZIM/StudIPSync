@@ -22,9 +22,8 @@ A custom studip-sync fork for windows clients of the PH Karlsruhe.
 The `files_destination` and `media_destination` option are optional. If you omit one of them, the corresponding feature is disabled. You can also specify both options on the commandline. (Using `-d` implies automatically `--full` if no config is present)
 If you omit the `login` or `password`, studip-sync will ask for them interactively.
 
-
 ### Changes to studip-sync
-To make studip-sync work on windows we had to change a lot.
+To make studip-sync work on windows substantial changes had to be made.
 - robocopy instead of rsync
 - chunking file writes from requests instead of binary write of the whole file
 - ignore deletion errors
