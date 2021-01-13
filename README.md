@@ -28,3 +28,4 @@ To make studip-sync work on windows substantial changes had to be made.
 - chunking file writes from requests instead of binary write of the whole file
 - ignore deletion errors
 - file paths that are > 280 characters long had to be dealt with
+- build own bootloader for pyinstall to avoid being false positive by antivirus software
