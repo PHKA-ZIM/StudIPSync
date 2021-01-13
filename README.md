@@ -7,13 +7,15 @@ A custom studip-sync fork for windows clients of the PH Karlsruhe.
 ```json
 {
     "user": {
-        "login": "bob42",
-        "password": "password"
+        "login": "[username]",
+        "password": "[password]"
     },
-    "files_destination": "/home/bob/Documents/Uni",
-    "media_destination": "/home/bob/Videos/Uni",
-    "base_url": "https://studip.uni-goettingen.de"
+    "base_url": "https://lms.ph-karlsruhe.de/studip/index.php?again=yes",
+    "auth_type": "general",
+    "files_destination": "./data/",
+    "media_destination": "./media/"
 }
+
 
 ```
 
