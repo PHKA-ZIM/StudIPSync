@@ -1,8 +1,9 @@
 import getpass
 import os
+from sys import exit
 import shlex
 import subprocess
-
+from sys import exit
 from studip_sync import get_config_file
 from studip_sync.arg_parser import ARGS
 from studip_sync.config_creator import ConfigCreator
@@ -165,4 +166,5 @@ try:
 except ConfigError as err:
     print(str(err))
     print("Aborting...")
+    from sys import exit
     exit(1)

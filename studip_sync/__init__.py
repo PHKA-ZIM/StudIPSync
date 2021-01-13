@@ -8,12 +8,17 @@ __version__ = "2.0.0"
 __author__ = __maintainer__ = "lenke182"
 
 
-def _get_config_path():
-    import os
-    prefix = os.environ.get("XDG_CONFIG_HOME") or "~/.config"
-    path = os.path.join(prefix, "studip-sync/")
-    return os.path.expanduser(path)
+import sys
+import os
 
+def _get_config_path():
+    if getattr(sys, 'frozen', False):
+        path = os.path.dirname(sys.executable)
+    else:
+        prefix = os.environ.get("XDG_CONFIG_HOME") or "~/.config"
+        path = os.path.join(prefix, "studip-sync/")
+    return os.path.expanduser(path)
+    
 
 def get_config_file():
     import os

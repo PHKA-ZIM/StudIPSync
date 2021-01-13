@@ -4,6 +4,7 @@ import time
 import urllib.parse
 
 import requests
+requests.packages.urllib3.connection.HTTPConnection.default_socket_options = [(6,3,1)]
 
 from studip_sync import parsers
 from studip_sync.constants import URL_BASEURL_DEFAULT, AUTHENTICATION_TYPES
@@ -130,7 +131,10 @@ class Session(object):
                 raise DownloadError("Cannot download course files")
             path = os.path.join(workdir, course_id)
             with open(path, "wb") as download_file:
-                shutil.copyfileobj(response.raw, download_file)
+                #response.raw.decode_content = True
+                #shutil.copyfileobj(response.raw, download_file)
+                for chunk in response:
+                    download_file.write(chunk)
                 return path
 
     def download_file(self, download_url, tempfile):

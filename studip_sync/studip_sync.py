@@ -13,6 +13,24 @@ from studip_sync.plugins.plugins import PLUGINS
 from studip_sync.session import Session, DownloadError, MissingFeatureError
 from studip_sync.parsers import ParserError
 
+#from studip_sync.zipfilelongpaths import ZipfileLongPaths
+
+
+def winapi_path(dos_path, encoding=None):
+    path = os.path.abspath(dos_path)
+
+    if path.startswith("\\\\"):
+        path = "\\\\?\\UNC\\" + path[2:]
+    else:
+        path = "\\\\?\\" + path 
+
+    return path
+
+class ZipfileLongPaths(zipfile.ZipFile):
+
+    def _extract_member(self, member, targetpath, pwd):
+        targetpath = winapi_path(targetpath)
+        return zipfile.ZipFile._extract_member(self, member, targetpath, pwd)
 
 class ExtractionError(Exception):
     pass
@@ -39,7 +57,7 @@ class StudipSync(object):
         PLUGINS.hook("hook_start")
 
         extractor = Extractor(self.extract_dir)
-        rsync = RsyncWrapper()
+        rsync = RobocopyWrapper()
 
         with Session(base_url=CONFIG.base_url, plugins=PLUGINS) as session:
             print("Logging in...")
@@ -110,8 +128,15 @@ class StudipSync(object):
 
         return status_code
 
+    
+
     def cleanup(self):
-        shutil.rmtree(self.workdir)
+        def remove_readonly(func, path, _):
+            #"Clear the readonly bit and reattempt the removal"
+            os.chmod(path, stat.S_IWRITE)
+            func(path)
+
+        shutil.rmtree(self.workdir, ignore_errors=True)
 
     def __enter__(self):
         return self
@@ -133,6 +158,18 @@ class RsyncWrapper(object):
                          "--suffix=" + self.suffix, source, destination])
 
 
+# pylint: disable=too-few-public-methods
+class RobocopyWrapper(object):
+
+    def __init__(self):
+        super(RobocopyWrapper, self).__init__()
+        timestr = datetime.strftime(datetime.now(), "%Y-%m-%d_%H+%M+%S")
+        self.suffix = "_" + timestr + ".old"
+
+    def sync(self, source, destination):
+        subprocess.call(["robocopy", source, destination, "/MIR", "/PURGE", "/r:60", "/w:5", "/MT:64"])
+
+
 class Extractor(object):
 
     def __init__(self, basedir):
@@ -149,7 +186,7 @@ class Extractor(object):
             intermediary = os.path.join(extracted_dir, subdirs[0])
             for filename in glob.iglob(os.path.join(intermediary, "*")):
                 shutil.move(filename, extracted_dir)
-            os.rmdir(intermediary)
+            #os.rmdir(intermediary)
 
     @staticmethod
     def remove_empty_dirs(directory):
@@ -163,9 +200,10 @@ class Extractor(object):
         if os.path.isfile(filelist):
             os.remove(filelist)
 
-    def extract(self, archive_filename, destination, cleanup=True):
+    def extract(self, archive_filename, destination, cleanup=False):
         try:
-            with zipfile.ZipFile(archive_filename, "r") as archive:
+            #archive_filename = archive_filename.replace('/', os.path.sep)
+            with ZipfileLongPaths(archive_filename, "r") as archive:
                 destination = os.path.join(self.basedir, destination)
                 archive.extractall(destination)
                 if cleanup:
