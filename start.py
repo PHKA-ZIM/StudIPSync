@@ -27,7 +27,8 @@ if ARGS.disable_plugin:
 if not ARGS.new:
     from studip_sync.studip_sync import StudipSync
     with StudipSync() as s:
-        exit(s.sync(ARGS.full, ARGS.recent))
+        import sys
+        sys.exit(s.sync(ARGS.full, ARGS.recent))
 else:
     from studip_sync.studip_rsync import StudIPRSync
     with StudIPRSync() as s:

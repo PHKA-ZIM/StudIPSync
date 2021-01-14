@@ -167,7 +167,7 @@ class RobocopyWrapper(object):
         self.suffix = "_" + timestr + ".old"
 
     def sync(self, source, destination):
-        subprocess.call(["robocopy", source, destination, "/MIR", "/PURGE", "/r:60", "/w:5", "/MT:64"])
+        subprocess.call(["robocopy", source, destination, "/MIR", "/PURGE", "/r:60", "/w:5"])
 
 
 class Extractor(object):
@@ -200,12 +200,23 @@ class Extractor(object):
         if os.path.isfile(filelist):
             os.remove(filelist)
 
+    @staticmethod
+    def sanitize(filename):
+        import re
+        filename = filename.replace(":", ".")
+        filename = filename.replace(" /", "/") #https://stackoverflow.com/questions/43405005/windows-7-folder-broken-creation-glitch
+        return filename
+
     def extract(self, archive_filename, destination, cleanup=False):
         try:
             #archive_filename = archive_filename.replace('/', os.path.sep)
             with ZipfileLongPaths(archive_filename, "r") as archive:
                 destination = os.path.join(self.basedir, destination)
-                archive.extractall(destination)
+                #archive.extractall(destination)
+                zipinfos = archive.infolist()
+                for zipinfo in zipinfos:
+                    zipinfo.filename = Extractor.sanitize(zipinfo.filename)
+                    archive.extract(zipinfo, path=destination)
                 if cleanup:
                     self.remove_filelist(destination)
                     self.remove_intermediary_dir(destination)
