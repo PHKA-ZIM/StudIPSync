@@ -1,7 +1,6 @@
 {
     "user": {
-        "login": "[username]",
-        "password": "[password]"
+        
     },
     "base_url": "https://lms.ph-karlsruhe.de/studip/index.php?again=yes",
     "auth_type": "general",

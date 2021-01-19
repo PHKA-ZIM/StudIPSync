@@ -19,6 +19,14 @@ from studip_sync.parsers import ParserError
 def winapi_path(dos_path, encoding=None):
     path = os.path.abspath(dos_path)
 
+    #TODO: clean this up
+    path = path.replace("\"", "")
+    path = path.replace("?", "")
+    path = path.replace("*", "")
+    path = path.replace("|", "")
+    path = path.replace("<", "")
+    path = path.replace(">", "")
+
     if path.startswith("\\\\"):
         path = "\\\\?\\UNC\\" + path[2:]
     else:
@@ -116,7 +124,7 @@ class StudipSync(object):
                         # Ignore if there is no media
                         pass
                     except DownloadError as e:
-                        print("\tDownload of media failed: " + str(e))
+                        #print("\tDownload of media failed: " + str(e))
                         status_code = 2
 
         if self.files_destination_dir:
@@ -182,11 +190,12 @@ class Extractor(object):
             return os.path.isdir(os.path.join(extracted_dir, base_name))
 
         subdirs = list(filter(_filter_dirs, os.listdir(extracted_dir)))
+        print(subdirs)
         if len(subdirs) == 1:
             intermediary = os.path.join(extracted_dir, subdirs[0])
             for filename in glob.iglob(os.path.join(intermediary, "*")):
                 shutil.move(filename, extracted_dir)
-            #os.rmdir(intermediary)
+            os.rmdir(intermediary)
 
     @staticmethod
     def remove_empty_dirs(directory):
@@ -203,7 +212,7 @@ class Extractor(object):
     @staticmethod
     def sanitize(filename):
         import re
-        filename = filename.replace(":", ".")
+        filename = filename[0:2] + filename[2:].replace(":", ".")
         filename = filename.replace(" /", "/") #https://stackoverflow.com/questions/43405005/windows-7-folder-broken-creation-glitch
         return filename
 
@@ -211,12 +220,12 @@ class Extractor(object):
         try:
             #archive_filename = archive_filename.replace('/', os.path.sep)
             with ZipfileLongPaths(archive_filename, "r") as archive:
-                destination = os.path.join(self.basedir, destination)
+                destination = Extractor.sanitize(os.path.join(self.basedir, destination))
                 #archive.extractall(destination)
                 zipinfos = archive.infolist()
                 for zipinfo in zipinfos:
                     zipinfo.filename = Extractor.sanitize(zipinfo.filename)
-                    archive.extract(zipinfo, path=Extractor.sanitize(destination))
+                    archive.extract(zipinfo, path=destination)
                 if cleanup:
                     self.remove_filelist(destination)
                     self.remove_intermediary_dir(destination)
