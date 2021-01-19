@@ -216,7 +216,7 @@ class Extractor(object):
                 zipinfos = archive.infolist()
                 for zipinfo in zipinfos:
                     zipinfo.filename = Extractor.sanitize(zipinfo.filename)
-                    archive.extract(zipinfo, path=destination)
+                    archive.extract(zipinfo, path=Extractor.sanitize(destination))
                 if cleanup:
                     self.remove_filelist(destination)
                     self.remove_intermediary_dir(destination)

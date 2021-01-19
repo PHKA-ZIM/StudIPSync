@@ -1,1 +1,1 @@
-py -m PyInstaller start.py --noupx --name phstudipsync
+py -m PyInstaller start.py --name phstudipsync --clean --noconfirm 
