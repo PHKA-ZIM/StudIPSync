@@ -13,6 +13,21 @@ from studip_sync.plugins.plugins import PLUGINS
 from studip_sync.session import Session, DownloadError, MissingFeatureError
 from studip_sync.parsers import ParserError
 
+class Unbuffered(object):
+   def __init__(self, stream):
+       self.stream = stream
+   def write(self, data):
+       self.stream.write(data)
+       self.stream.flush()
+   def writelines(self, datas):
+       self.stream.writelines(datas)
+       self.stream.flush()
+   def __getattr__(self, attr):
+       return getattr(self.stream, attr)
+
+import sys
+sys.stdout = Unbuffered(sys.stdout)
+
 #from studip_sync.zipfilelongpaths import ZipfileLongPaths
 
 
